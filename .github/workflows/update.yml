@@ -1,0 +1,54 @@
+name: Update AltStore Source
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # 每6小时自动运行一次
+  workflow_dispatch:      # 允许手动点击运行
+
+jobs:
+  update-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Update Apps JSON
+        run: |
+          # 1. 定义需要追踪的 GitHub 仓库列表，格式为 "Repo|AppName|FileExtension"
+          # 注意：Animeko 的后缀是 .ios，PiliPlus 的后缀通常是 .ipa
+          APPS=("open-ani/ani|Animeko|.ios" "bggRGjQaUbCoE/PiliPlus|PiliPlus|.ipa")
+
+          for APP in "${APPS[@]}"; do
+            IFS="|" read -r REPO NAME EXT <<< "$APP"
+            echo "Checking updates for $NAME ($REPO)..."
+
+            # 2. 获取最新 Release 信息
+            API_URL="https://api.github.com/repos/$REPO/releases/latest"
+            RELEASE_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $API_URL)
+
+            # 3. 提取关键字段
+            VERSION=$(echo "$RELEASE_DATA" | jq -r .tag_name | sed 's/v//')
+            DATE=$(echo "$RELEASE_DATA" | jq -r .published_at | cut -d'T' -f1)
+            
+            # 提取包含指定后缀的第一个文件的下载链接和大小
+            ASSET=$(echo "$RELEASE_DATA" | jq -c ".assets[] | select(.name | endswith(\"$EXT\"))" | head -n 1)
+            RAW_URL=$(echo "$ASSET" | jq -r .browser_download_url)
+            SIZE=$(echo "$ASSET" | jq -r .size)
+            
+            # 使用代理前缀
+            DL_URL="https://mirror.ghproxy.com/?q=$RAW_URL"
+
+            # 4. 使用 jq 更新 apps.json
+            # 逻辑：查找数组中 name 匹配的应用，并更新其第一个 version 的所有字段
+            jq --arg name "$NAME" --arg ver "$VERSION" --arg dl "$DL_URL" --arg size "$SIZE" --arg date "$DATE" \
+            '(.apps[] | select(.name == $name) | .versions[0]) |= (.version = $ver | .downloadURL = $dl | .size = ($size|tonumber) | .date = $date)' \
+            apps.json > temp.json && mv temp.json apps.json
+            
+            echo "Finished updating $NAME to $VERSION"
+          done
+
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update: sync latest app releases"
+          file_pattern: 'apps.json'
