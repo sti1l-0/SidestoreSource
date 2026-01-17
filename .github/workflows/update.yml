@@ -14,7 +14,7 @@ jobs:
 
       - name: Update Apps JSON
         run: |
-          # 格式：仓库名|应用名|后缀 (不需要反斜杠)
+          # 格式：仓库名|应用名|后缀
           APPS=("open-ani/animeko|Animeko|.ipa" "bggRGjQaUbCoE/PiliPlus|PiliPlus|.ipa")
 
           for APP in "${APPS[@]}"; do
@@ -23,7 +23,7 @@ jobs:
             echo "Checking updates for $NAME ($REPO)..."
 
             API_URL="https://api.github.com/repos/$REPO/releases/latest"
-            # 使用 -f 强制 curl 在 404 时报错
+            # 获取最新正式版 Release 信息
             RELEASE_DATA=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$API_URL")
 
             if [[ -z "$RELEASE_DATA" || "$RELEASE_DATA" == *"message"* ]]; then
@@ -34,7 +34,7 @@ jobs:
             VERSION=$(echo "$RELEASE_DATA" | jq -r .tag_name | sed 's/v//')
             DATE=$(echo "$RELEASE_DATA" | jq -r .published_at | cut -d'T' -f1)
             
-            # 使用 endswith 检查后缀，转义更简单
+            # 使用 endswith 检查匹配后缀的第一个资产
             ASSET=$(echo "$RELEASE_DATA" | jq -c --arg ext "$EXT" '.assets[] | select(.name | endswith($ext))' | head -n 1)
             
             if [ -z "$ASSET" ]; then
@@ -44,9 +44,11 @@ jobs:
 
             RAW_URL=$(echo "$ASSET" | jq -r .browser_download_url)
             SIZE=$(echo "$ASSET" | jq -r .size)
-            DL_URL="https://mirror.ghproxy.com/?q=$RAW_URL"
+            
+            # --- 修改此处为 gh-proxy.org ---
+            DL_URL="https://gh-proxy.org/$RAW_URL"
 
-            # 更新 JSON
+            # 更新 JSON 文件
             if jq --arg name "$NAME" --arg ver "$VERSION" --arg dl "$DL_URL" --arg size "$SIZE" --arg date "$DATE" \
               '(.apps[] | select(.name == $name) | .versions[0]) |= (.version = $ver | .downloadURL = $dl | .size = ($size|tonumber) | .date = $date)' \
               apps.json > apps.json.tmp; then
@@ -61,5 +63,5 @@ jobs:
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto-update: sync latest app releases"
+          commit_message: "Auto-update: sync latest app releases with gh-proxy"
           file_pattern: 'apps.json'
