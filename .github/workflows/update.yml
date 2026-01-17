@@ -14,31 +14,31 @@ jobs:
 
       - name: Update Apps JSON
         run: |
-          # 格式：仓库名|应用名|匹配关键字(正则)
-          # 将 .ios 改为 .ipa，并支持大小写不敏感匹配
-          APPS=("open-ani/animeko|Animeko|\.ipa$" "bggRGjQaUbCoE/PiliPlus|PiliPlus|\.ipa$")
+          # 格式：仓库名|应用名|后缀 (不需要反斜杠)
+          APPS=("open-ani/animeko|Animeko|.ipa" "bggRGjQaUbCoE/PiliPlus|PiliPlus|.ipa")
 
           for APP in "${APPS[@]}"; do
-            IFS="|" read -r REPO NAME EXT_PATTERN <<< "$APP"
+            IFS="|" read -r REPO NAME EXT <<< "$APP"
             echo "--------------------------------------------"
             echo "Checking updates for $NAME ($REPO)..."
 
             API_URL="https://api.github.com/repos/$REPO/releases/latest"
-            RELEASE_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $API_URL)
+            # 使用 -f 强制 curl 在 404 时报错
+            RELEASE_DATA=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$API_URL")
 
-            if echo "$RELEASE_DATA" | jq -e '.message' > /dev/null; then
-              echo "Error: API returned message: $(echo "$RELEASE_DATA" | jq -r .message). Skipping $NAME."
+            if [[ -z "$RELEASE_DATA" || "$RELEASE_DATA" == *"message"* ]]; then
+              echo "Error: Could not fetch data for $REPO. Skipping."
               continue
             fi
 
             VERSION=$(echo "$RELEASE_DATA" | jq -r .tag_name | sed 's/v//')
             DATE=$(echo "$RELEASE_DATA" | jq -r .published_at | cut -d'T' -f1)
             
-            # 使用 test() 进行正则匹配，忽略大小写
-            ASSET=$(echo "$RELEASE_DATA" | jq -c ".assets[] | select(.name | test(\"$EXT_PATTERN\"; \"i\"))" | head -n 1)
+            # 使用 endswith 检查后缀，转义更简单
+            ASSET=$(echo "$RELEASE_DATA" | jq -c --arg ext "$EXT" '.assets[] | select(.name | endswith($ext))' | head -n 1)
             
             if [ -z "$ASSET" ]; then
-              echo "Warning: No assets matching pattern $EXT_PATTERN found for $NAME. Skipping..."
+              echo "Warning: No assets ending with $EXT found for $NAME. Skipping..."
               continue
             fi
 
@@ -46,6 +46,7 @@ jobs:
             SIZE=$(echo "$ASSET" | jq -r .size)
             DL_URL="https://mirror.ghproxy.com/?q=$RAW_URL"
 
+            # 更新 JSON
             if jq --arg name "$NAME" --arg ver "$VERSION" --arg dl "$DL_URL" --arg size "$SIZE" --arg date "$DATE" \
               '(.apps[] | select(.name == $name) | .versions[0]) |= (.version = $ver | .downloadURL = $dl | .size = ($size|tonumber) | .date = $date)' \
               apps.json > apps.json.tmp; then
