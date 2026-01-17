@@ -1,0 +1,18 @@
+{
+  "name": "sti1l's side",
+  "identifier": "com.github.sti1l-0.SidestoreSource",
+  "apps": [
+    {
+      "name": "Animeko",
+      "bundleIdentifier": "com.openani.animeko",
+      "developerName": "Open-Ani",
+      "versions": [{ "version": "0.0.0" }]
+    },
+    {
+      "name": "PiliPlus",
+      "bundleIdentifier": "com.piliplus.app",
+      "developerName": "bggRGjQaUbCoE",
+      "versions": [{ "version": "0.0.0" }]
+    }
+  ]
+}
