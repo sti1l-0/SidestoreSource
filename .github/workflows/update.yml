@@ -30,11 +30,10 @@ jobs:
               continue
             fi
 
-            # 1. 提取基本信息
             VERSION=$(echo "$RELEASE_DATA" | jq -r .tag_name | sed 's/v//')
             DATE=$(echo "$RELEASE_DATA" | jq -r .published_at | cut -d'T' -f1)
             
-            # 2. 提取资产
+            # 提取下载资产
             ASSET=$(echo "$RELEASE_DATA" | jq -c --arg ext "$EXT" '.assets[] | select(.name | endswith($ext))' | head -n 1)
             if [ -z "$ASSET" ]; then
               echo "Warning: No $EXT asset found for $NAME. Skipping."
@@ -44,14 +43,11 @@ jobs:
             RAW_URL=$(echo "$ASSET" | jq -r .browser_download_url)
             SIZE=$(echo "$ASSET" | jq -r .size)
             DL_URL="https://gh-proxy.org/$RAW_URL"
-
-            # 3. 自动提取图标
             RAW_ICON_URL=$(echo "$RELEASE_DATA" | jq -r .author.avatar_url)
             ICON_URL="https://gh-proxy.org/$RAW_ICON_URL"
 
-            # 4. 原子化更新 JSON (补全所有 SideStore 要求的字段)
-            # 使用 select(.name == $name) 定位应用
-            # 补全 localizedDescription, category, screenshots, appPermissions, patreon, pledge
+            # 4. 原子化更新 JSON
+            # 关键修改：彻底移除 .patreon 字段，并确保 .pricing 设置为免费
             if jq --arg name "$NAME" --arg ver "$VERSION" --arg dl "$DL_URL" --arg size "$SIZE" --arg date "$DATE" --arg icon "$ICON_URL" --arg cat "$CAT" \
               '(.apps[] | select(.name == $name)) |= (
                 .iconURL = $icon |
@@ -59,26 +55,7 @@ jobs:
                 .localizedDescription = (.localizedDescription // .description // "No description provided.") |
                 .screenshots = (.screenshots // []) |
                 .appPermissions = (.appPermissions // {}) |
-                .patreon = { "pledge": 0 } |
+                .pricing = { "price": 0, "currency": "USD" } |
+                del(.patreon) |
                 .versions[0] = {
-                  "version": $ver,
-                  "date": $date,
-                  "downloadURL": $dl,
-                  "size": ($size | tonumber),
-                  "localizedDescription": ("Updated to version " + $ver)
-                }
-              )' \
-              apps.json > apps.json.tmp; then
-                mv apps.json.tmp apps.json
-                echo "Successfully updated $NAME to version $VERSION"
-            else
-                echo "Error: Failed to process JSON for $NAME."
-                rm -f apps.json.tmp
-            fi
-          done
-
-      - name: Commit and Push
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Auto-update: sync releases, icons, and fix pledge/description fields"
-          file_pattern: 'apps.json'
+                  "version": $
