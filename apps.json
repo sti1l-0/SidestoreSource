@@ -1,18 +1,23 @@
 {
   "name": "sti1l's side",
   "identifier": "com.github.sti1l-0.SidestoreSource",
+  "subtitle": "My side projects",
+  "news": [],
   "apps": [
     {
       "name": "Animeko",
       "bundleIdentifier": "org.openani.Animeko",
       "developerName": "Open-Ani",
-      "iconURL": "https://gh-proxy.org/https://avatars.githubusercontent.com/in/15368?v=4",
+      "subtitle": "Anime Client",
+      "description": "Native anime client for iOS.",
+      "iconURL": "https://gh-proxy.org/https://avatars.githubusercontent.com/u/132474144",
       "versions": [
         {
           "version": "5.2.0",
           "downloadURL": "https://gh-proxy.org/https://github.com/open-ani/animeko/releases/download/v5.2.0/ani-5.2.0.ipa",
           "size": 34231046,
-          "date": "2025-11-08"
+          "date": "2025-11-08",
+          "localizedDescription": "Updated to 5.2.0"
         }
       ]
     },
@@ -20,13 +25,16 @@
       "name": "PiliPlus",
       "bundleIdentifier": "com.example.piliplus",
       "developerName": "bggRGjQaUbCoE",
-      "iconURL": "https://gh-proxy.org/https://avatars.githubusercontent.com/in/15368?v=4",
+      "subtitle": "PiliPlus Client",
+      "description": "Third-party client for PiliPlus.",
+      "iconURL": "https://gh-proxy.org/https://avatars.githubusercontent.com/u/152865955",
       "versions": [
         {
           "version": "1.1.5.4",
           "downloadURL": "https://gh-proxy.org/https://github.com/bggRGjQaUbCoE/PiliPlus/releases/download/1.1.5.4/PiliPlus_ios_1.1.5%2B4543.ipa",
           "size": 25103780,
-          "date": "2026-01-15"
+          "date": "2026-01-15",
+          "localizedDescription": "Updated to 1.1.5.4"
         }
       ]
     }
