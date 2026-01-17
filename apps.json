@@ -8,7 +8,10 @@
       "developerName": "Open-Ani",
       "versions": [
         {
-          "version": "0.0.0"
+          "version": "5.2.0",
+          "downloadURL": "https://mirror.ghproxy.com/?q=https://github.com/open-ani/animeko/releases/download/v5.2.0/ani-5.2.0.ipa",
+          "size": 34231046,
+          "date": "2025-11-08"
         }
       ]
     },
