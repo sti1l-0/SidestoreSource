@@ -6,13 +6,24 @@
       "name": "Animeko",
       "bundleIdentifier": "com.openani.animeko",
       "developerName": "Open-Ani",
-      "versions": [{ "version": "0.0.0" }]
+      "versions": [
+        {
+          "version": "0.0.0"
+        }
+      ]
     },
     {
       "name": "PiliPlus",
       "bundleIdentifier": "com.piliplus.app",
       "developerName": "bggRGjQaUbCoE",
-      "versions": [{ "version": "0.0.0" }]
+      "versions": [
+        {
+          "version": "1.1.5.4",
+          "downloadURL": "https://mirror.ghproxy.com/?q=https://github.com/bggRGjQaUbCoE/PiliPlus/releases/download/1.1.5.4/PiliPlus_ios_1.1.5%2B4543.ipa",
+          "size": 25103780,
+          "date": "2026-01-15"
+        }
+      ]
     }
   ]
 }
