@@ -20,10 +20,10 @@ jobs:
           for APP in "${APPS[@]}"; do
             IFS="|" read -r REPO NAME EXT <<< "$APP"
             echo "--------------------------------------------"
-            echo "Checking updates for $NAME ($REPO)..."
+            echo "Processing $NAME ($REPO)..."
 
-            API_URL="https://api.github.com/repos/$REPO/releases/latest"
             # 获取最新正式版 Release 信息
+            API_URL="https://api.github.com/repos/$REPO/releases/latest"
             RELEASE_DATA=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$API_URL")
 
             if [[ -z "$RELEASE_DATA" || "$RELEASE_DATA" == *"message"* ]]; then
@@ -31,29 +31,32 @@ jobs:
               continue
             fi
 
+            # 1. 提取版本和日期
             VERSION=$(echo "$RELEASE_DATA" | jq -r .tag_name | sed 's/v//')
             DATE=$(echo "$RELEASE_DATA" | jq -r .published_at | cut -d'T' -f1)
             
-            # 使用 endswith 检查匹配后缀的第一个资产
+            # 2. 提取资产 (IPA 文件)
             ASSET=$(echo "$RELEASE_DATA" | jq -c --arg ext "$EXT" '.assets[] | select(.name | endswith($ext))' | head -n 1)
-            
             if [ -z "$ASSET" ]; then
-              echo "Warning: No assets ending with $EXT found for $NAME. Skipping..."
+              echo "Warning: No $EXT asset found for $NAME. Skipping."
               continue
             fi
 
             RAW_URL=$(echo "$ASSET" | jq -r .browser_download_url)
             SIZE=$(echo "$ASSET" | jq -r .size)
-            
-            # --- 修改此处为 gh-proxy.org ---
             DL_URL="https://gh-proxy.org/$RAW_URL"
 
-            # 更新 JSON 文件
-            if jq --arg name "$NAME" --arg ver "$VERSION" --arg dl "$DL_URL" --arg size "$SIZE" --arg date "$DATE" \
-              '(.apps[] | select(.name == $name) | .versions[0]) |= (.version = $ver | .downloadURL = $dl | .size = ($size|tonumber) | .date = $date)' \
+            # 3. 自动提取图标 (项目所有者头像)
+            RAW_ICON_URL=$(echo "$RELEASE_DATA" | jq -r .author.avatar_url)
+            ICON_URL="https://gh-proxy.org/$RAW_ICON_URL"
+
+            # 4. 更新 JSON
+            # 逻辑：匹配 name，同时更新 iconURL 和 versions 数组
+            if jq --arg name "$NAME" --arg ver "$VERSION" --arg dl "$DL_URL" --arg size "$SIZE" --arg date "$DATE" --arg icon "$ICON_URL" \
+              '(.apps[] | select(.name == $name)) |= (.iconURL = $icon | .versions[0].version = $ver | .versions[0].downloadURL = $dl | .versions[0].size = ($size|tonumber) | .versions[0].date = $date)' \
               apps.json > apps.json.tmp; then
                 mv apps.json.tmp apps.json
-                echo "Successfully updated $NAME to version $VERSION"
+                echo "Successfully updated $NAME to version $VERSION with icon"
             else
                 echo "Error: Failed to process JSON for $NAME."
                 rm -f apps.json.tmp
@@ -63,5 +66,5 @@ jobs:
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto-update: sync latest app releases with gh-proxy"
+          commit_message: "Auto-update: releases, icons, and bundle IDs"
           file_pattern: 'apps.json'
