@@ -19,11 +19,11 @@
       "appPermissions": {},
       "versions": [
         {
-          "version": "5.2.0",
-          "date": "2025-11-08",
-          "downloadURL": "https://gh-proxy.org/https://github.com/open-ani/animeko/releases/download/v5.2.0/ani-5.2.0.ipa",
-          "size": 34231046,
-          "localizedDescription": "Updated to version 5.2.0"
+          "version": "5.3.0",
+          "date": "2026-02-07",
+          "downloadURL": "https://gh-proxy.org/https://github.com/open-ani/animeko/releases/download/v5.3.0/ani-5.3.0.ipa",
+          "size": 31048826,
+          "localizedDescription": "Updated to version 5.3.0"
         }
       ],
       "pricing": {
@@ -44,11 +44,11 @@
       "appPermissions": {},
       "versions": [
         {
-          "version": "1.1.5",
-          "date": "2026-01-28",
-          "downloadURL": "https://gh-proxy.org/https://github.com/bggRGjQaUbCoE/PiliPlus/releases/download/1.1.5.7/PiliPlus_ios_1.1.5%2B4584.ipa",
-          "size": 25132786,
-          "localizedDescription": "Updated to version 1.1.5"
+          "version": "1.1.6",
+          "date": "2026-02-07",
+          "downloadURL": "https://gh-proxy.org/https://github.com/bggRGjQaUbCoE/PiliPlus/releases/download/1.1.6/PiliPlus_ios_1.1.6%2B4626.ipa",
+          "size": 25139197,
+          "localizedDescription": "Updated to version 1.1.6"
         }
       ],
       "pricing": {
