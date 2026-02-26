@@ -19,11 +19,11 @@
       "appPermissions": {},
       "versions": [
         {
-          "version": "5.3.1",
-          "date": "2026-02-07",
-          "downloadURL": "https://gh-proxy.org/https://github.com/open-ani/animeko/releases/download/v5.3.1/ani-5.3.1.ipa",
-          "size": 31057279,
-          "localizedDescription": "Updated to version 5.3.1"
+          "version": "5.3.2",
+          "date": "2026-02-26",
+          "downloadURL": "https://gh-proxy.org/https://github.com/open-ani/animeko/releases/download/v5.3.2/ani-5.3.2.ipa",
+          "size": 31051074,
+          "localizedDescription": "Updated to version 5.3.2"
         }
       ],
       "pricing": {
