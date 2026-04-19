@@ -8,7 +8,7 @@
   "apps": [
     {
       "name": "Animeko",
-      "bundleIdentifier": "org.openani.Animeko",
+      "bundleIdentifier": "org.openani.animeko",
       "developerName": "Open-Ani",
       "subtitle": "Anime Client",
       "localizedDescription": "Native anime client for iOS.",
